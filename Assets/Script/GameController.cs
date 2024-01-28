@@ -53,10 +53,14 @@ public class GameController
 
         List<BoardSequence> boardSequences = new List<BoardSequence>();
         List<List<bool>> matchedTiles;
+        int comboIndex = 0;
+        int numberOfMatchedTiles = 0;
+
         while (HasMatch(matchedTiles = FindMatches(newBoard)))
         {
             //Cleaning the matched tiles
             List<Vector2Int> matchedPosition = new List<Vector2Int>();
+
             for (int y = 0; y < newBoard.Count; y++)
             {
                 for (int x = 0; x < newBoard[y].Count; x++)
@@ -65,9 +69,12 @@ public class GameController
                     {
                         matchedPosition.Add(new Vector2Int(x, y));
                         newBoard[y][x] = new Tile { id = -1, type = -1 };
+                        Debug.Log("combo " + comboIndex + ", number of matched tiles " + numberOfMatchedTiles);
+                        numberOfMatchedTiles++;
                     }
                 }
             }
+            comboIndex++;
 
             // Dropping the tiles
             Dictionary<int, MovedTileInfo> movedTiles = new Dictionary<int, MovedTileInfo>();
@@ -134,12 +141,16 @@ public class GameController
             {
                 matchedPosition = matchedPosition,
                 movedTiles = movedTilesList,
-                addedTiles = addedTiles
+                addedTiles = addedTiles,
+                numberOfMatchedTiles = numberOfMatchedTiles,
+                comboIndex = comboIndex
             };
             boardSequences.Add(sequence);
+            numberOfMatchedTiles = 0;
         }
 
         _boardTiles = newBoard;
+
         return boardSequences;
         //return _boardTiles;
     }
@@ -185,6 +196,16 @@ public class GameController
                     matchedTiles[y - 1][x] = true;
                     matchedTiles[y - 2][x] = true;
                 }
+            }
+        }
+
+        int multiplier = 0;
+        for(int i = 0; i < matchedTiles.Count; i++)
+        {
+            for(int j = 0; j < matchedTiles[i].Count; j++)
+            {
+                if (matchedTiles[i][j] == true)
+                    multiplier++;
             }
         }
 

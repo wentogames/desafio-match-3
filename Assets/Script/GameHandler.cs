@@ -76,7 +76,11 @@ public class GameHandler : MonoBehaviour
         Sequence sequence = DOTween.Sequence();
 
         BoardSequence boardSequence = boardSequences[i];
-        sequence.Append(boardView.DestroyTiles(boardSequence.matchedPosition));
+        if(i == 0)
+            PunctuationManager.Instance.ResetClipPitch();
+
+        sequence.Append(boardView.DestroyTiles(boardSequence.matchedPosition)).OnStart(() => PunctuationManager.Instance.ShowPointsAdded((boardSequence.numberOfMatchedTiles * 10) *
+            boardSequence.comboIndex));
         sequence.Append(boardView.MoveTiles(boardSequence.movedTiles));
         sequence.Append(boardView.CreateTile(boardSequence.addedTiles));
 
