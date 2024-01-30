@@ -16,11 +16,30 @@ public class GameHandler : MonoBehaviour
 
     [SerializeField] public BoardView boardView;
 
-    [Header("Boosts")]
+    [Header("Boosts - Line Cleaner")]
     [SerializeField] public Button lineCleanerButton;
+    [SerializeField] public Sprite lineCleanerInactiveSprite;
+    [SerializeField] public Sprite lineCleanerActiveSprite;
     [SerializeField] public TMP_Text lineCleanerText;
     [SerializeField] int lineCleanerQuantity;
+
+    [Header("Boosts - Block Explosion")]
+    [SerializeField] public Button blockExplosionButton;
+    [SerializeField] public Sprite blockExplosionInactiveSprite;
+    [SerializeField] public Sprite blockExplosionActiveSprite;
+    [SerializeField] public TMP_Text blockExplosionText;
+    [SerializeField] int blockExplosionQuantity;
+
+    [Header("Boosts - ColorCleaner")]
+    [SerializeField] public Button colorCleanerButton;
+    [SerializeField] public Sprite colorCleanerInactiveSprite;
+    [SerializeField] public Sprite colorCleanerActiveSprite;
+    [SerializeField] public TMP_Text colorCleanerText;
+    [SerializeField] int colorCleanerQuantity;
+
     public bool InLineCleanerMode { get; set; }
+    public bool InBlockExplosionMode { get; set; }
+    public bool InColorCleanerMode { get; set; }
 
 
     private void Awake()
@@ -33,8 +52,8 @@ public class GameHandler : MonoBehaviour
     {
         List<List<Tile>> board = gameController.StartGame(boardWidth, boardHeight);
         boardView.CreateBoard(board);
-        InLineCleanerMode = false;
-        lineCleanerText.text = lineCleanerQuantity.ToString();
+        ToggleBoost((int)BoostMode.None);
+        UpdateLineCleanerText(BoostMode.None);
     }
 
     private int selectedX, selectedY = -1;
@@ -48,14 +67,28 @@ public class GameHandler : MonoBehaviour
         if (InLineCleanerMode)
         {
             isAnimating = true;
-            List<BoardSequence> swapResult = gameController.SwapTile(x, y, x, y, true);
+            List<BoardSequence> swapResult = gameController.SwapTile(x, y, x, y, BoostMode.LineCleaner);
 
             AnimateBoard(swapResult, 0, () => isAnimating = false);
 
             selectedX = -1;
             selectedY = -1;
-            ToggleLineCleanerMode(false);
-            UseLineCleaner();
+            ToggleBoost((int)BoostMode.LineCleaner);
+            UpdateLineCleanerText(BoostMode.LineCleaner);
+            ToggleBoost((int)BoostMode.None);
+        }
+        else if (InBlockExplosionMode)
+        {
+            isAnimating = true;
+            List<BoardSequence> swapResult = gameController.SwapTile(x, y, x, y, BoostMode.BlockExplosion);
+
+            AnimateBoard(swapResult, 0, () => isAnimating = false);
+
+            selectedX = -1;
+            selectedY = -1;
+            ToggleBoost((int)BoostMode.BlockExplosion);
+            UpdateLineCleanerText(BoostMode.BlockExplosion);
+            ToggleBoost((int)BoostMode.None);
         }
         else
         {
@@ -117,34 +150,77 @@ public class GameHandler : MonoBehaviour
         }
         else
         {
+            ToggleBoost((int)BoostMode.None);
             sequence.onComplete += () => onComplete();
         }
     }
 
-    public void ToggleLineCleanerMode(bool activate)
+    public void ToggleBoost(int mode)
     {
-        InLineCleanerMode = !InLineCleanerMode;
-        Debug.Log("Line Cleaner mode is on: " + InLineCleanerMode);
+        switch ((BoostMode)mode)
+        {
+            case BoostMode.LineCleaner:
+                if (lineCleanerQuantity > 0 && !isAnimating)
+                {
+                    InLineCleanerMode = true;
+                    lineCleanerButton.image.sprite = lineCleanerActiveSprite;
+                }
+                break;
+            case BoostMode.BlockExplosion:
+                if (blockExplosionQuantity > 0 && !isAnimating)
+                {
+                    InBlockExplosionMode = true;
+                    blockExplosionButton.image.sprite = blockExplosionActiveSprite;
+                }
+                break;
+            case BoostMode.ColorCleaner:
+                break;
+            default:
+                InLineCleanerMode = false;
+                InBlockExplosionMode = false;
+                InColorCleanerMode = false;
 
-        if (InLineCleanerMode)
-            lineCleanerButton.image.sprite = lineCleanerButton.spriteState.selectedSprite;
-        else
-            lineCleanerButton.image.sprite = lineCleanerButton.spriteState.highlightedSprite;
+                lineCleanerButton.image.sprite = lineCleanerInactiveSprite;
+                blockExplosionButton.image.sprite = blockExplosionInactiveSprite;
+                colorCleanerButton.image.sprite = colorCleanerInactiveSprite;
+                break;
+        }
+        Debug.Log("Switched to mode " + mode);
     }
 
-    public void UseLineCleaner()
+    private void UpdateLineCleanerText(BoostMode mode)
     {
-        lineCleanerQuantity--;
-        UpdateLineCleanerText();
-    }
-
-    private void UpdateLineCleanerText()
-    {
-        if (lineCleanerQuantity == 0)
-            lineCleanerButton.interactable = false;
-        else
-            lineCleanerButton.interactable = true;
-
-        lineCleanerText.text = lineCleanerQuantity.ToString();
+        switch (mode)
+        {
+            case BoostMode.LineCleaner:
+                lineCleanerQuantity--;
+                if (lineCleanerQuantity == 0)
+                    lineCleanerButton.interactable = false;
+                else
+                    lineCleanerButton.interactable = true;
+                lineCleanerText.text = lineCleanerQuantity.ToString();
+                break;
+            case BoostMode.BlockExplosion:
+                blockExplosionQuantity--;
+                if (blockExplosionQuantity == 0)
+                    blockExplosionButton.interactable = false;
+                else
+                    blockExplosionButton.interactable = true;
+                blockExplosionText.text = blockExplosionQuantity.ToString();
+                break;
+            case BoostMode.ColorCleaner:
+                colorCleanerQuantity--;
+                if (colorCleanerQuantity == 0)
+                    colorCleanerButton.interactable = false;
+                else
+                    colorCleanerButton.interactable = true;
+                colorCleanerText.text = colorCleanerQuantity.ToString();
+                break;
+            default:
+                lineCleanerText.text = lineCleanerQuantity.ToString();
+                blockExplosionText.text = blockExplosionQuantity.ToString();
+                colorCleanerText.text = colorCleanerQuantity.ToString();
+                break;
+        }
     }
 }

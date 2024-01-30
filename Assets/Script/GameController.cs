@@ -6,6 +6,7 @@ public class GameController
     private List<List<Tile>> _boardTiles;
     private List<int> _tilesTypes;
     private int _tileCount;
+    private const int BlockSide = 3;
 
     public List<List<Tile>> StartGame(int boardWidth, int boardHeight)
     {
@@ -43,7 +44,7 @@ public class GameController
         return false;
     }
 
-    public List<BoardSequence> SwapTile(int fromX, int fromY, int toX, int toY, bool InLineCleanerMode = false)
+    public List<BoardSequence> SwapTile(int fromX, int fromY, int toX, int toY, BoostMode boostMode = BoostMode.None)
     {
         List<List<Tile>> newBoard = CopyBoard(_boardTiles);
 
@@ -56,7 +57,7 @@ public class GameController
         int comboIndex = 0;
         int numberOfMatchedTiles = 0;
 
-        if (InLineCleanerMode)
+        if (boostMode == BoostMode.LineCleaner)
         {
             for (int x = 0; x < newBoard.Count; x++)
             {
@@ -65,7 +66,27 @@ public class GameController
 
                 matchedPosition.Add(new Vector2Int(x, fromY));
                 newBoard[fromY][x] = new Tile { id = -1, type = -1 };
-                numberOfMatchedTiles++;
+            }
+        }
+
+        else if(boostMode == BoostMode.BlockExplosion)
+        {
+            List<Vector2Int> matchedPosition = new List<Vector2Int>();
+            for (int x = (fromX - 1); x < ((fromX - 1) + BlockSide); x++)
+            {
+                //Cannot clear a tile outside the board
+                if(x >= 0 && x <= 9)
+                {
+                    for(int y = (fromY - 1); y < ((fromY - 1) + BlockSide); y++)
+                    {
+                        if(y >= 0 && y <= 9)
+                        {
+                            //Cleaning the tiles in a square 9x9 around the tapped Tile
+                            matchedPosition.Add(new Vector2Int(x, y));
+                            newBoard[y][x] = new Tile { id = -1, type = -1 };
+                        }
+                    }
+                }
             }
         }
 
