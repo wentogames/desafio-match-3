@@ -43,7 +43,7 @@ public class GameController
         return false;
     }
 
-    public List<BoardSequence> SwapTile(int fromX, int fromY, int toX, int toY)
+    public List<BoardSequence> SwapTile(int fromX, int fromY, int toX, int toY, bool InLineCleanerMode = false)
     {
         List<List<Tile>> newBoard = CopyBoard(_boardTiles);
 
@@ -55,6 +55,19 @@ public class GameController
         List<List<bool>> matchedTiles;
         int comboIndex = 0;
         int numberOfMatchedTiles = 0;
+
+        if (InLineCleanerMode)
+        {
+            for (int x = 0; x < newBoard.Count; x++)
+            {
+                //Cleaning the matched tiles in the same row
+                List<Vector2Int> matchedPosition = new List<Vector2Int>();
+
+                matchedPosition.Add(new Vector2Int(x, fromY));
+                newBoard[fromY][x] = new Tile { id = -1, type = -1 };
+                numberOfMatchedTiles++;
+            }
+        }
 
         while (HasMatch(matchedTiles = FindMatches(newBoard)))
         {
@@ -69,7 +82,6 @@ public class GameController
                     {
                         matchedPosition.Add(new Vector2Int(x, y));
                         newBoard[y][x] = new Tile { id = -1, type = -1 };
-                        Debug.Log("combo " + comboIndex + ", number of matched tiles " + numberOfMatchedTiles);
                         numberOfMatchedTiles++;
                     }
                 }

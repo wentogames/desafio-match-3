@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using TMPro;
+using UnityEngine.UI;
 
 public class GameHandler : MonoBehaviour
 {
@@ -14,6 +16,13 @@ public class GameHandler : MonoBehaviour
 
     [SerializeField] public BoardView boardView;
 
+    [Header("Boosts")]
+    [SerializeField] public Button lineCleanerButton;
+    [SerializeField] public TMP_Text lineCleanerText;
+    [SerializeField] int lineCleanerQuantity;
+    public bool InLineCleanerMode { get; set; }
+
+
     private void Awake()
     {
         gameController = new GameController();
@@ -24,6 +33,8 @@ public class GameHandler : MonoBehaviour
     {
         List<List<Tile>> board = gameController.StartGame(boardWidth, boardHeight);
         boardView.CreateBoard(board);
+        InLineCleanerMode = false;
+        lineCleanerText.text = lineCleanerQuantity.ToString();
     }
 
     private int selectedX, selectedY = -1;
@@ -34,40 +45,55 @@ public class GameHandler : MonoBehaviour
     {
         if (isAnimating) return;
 
-        if (selectedX > -1 && selectedY > -1)
+        if (InLineCleanerMode)
         {
-            if (Mathf.Abs(selectedX - x) + Mathf.Abs(selectedY - y) > 1)
-            {
-                selectedX = -1;
-                selectedY = -1;
-            }
-            else
-            {
-                isAnimating = true;
-                boardView.SwapTiles(selectedX, selectedY, x, y).onComplete += () =>
-                {
-                    bool isValid = gameController.IsValidMovement(selectedX, selectedY, x, y);
-                    if (!isValid)
-                    {
-                        boardView.SwapTiles(x, y, selectedX, selectedY)
-                        .onComplete += () => isAnimating = false;
-                    }
-                    else
-                    {
-                        List<BoardSequence> swapResult = gameController.SwapTile(selectedX, selectedY, x, y);
+            isAnimating = true;
+            List<BoardSequence> swapResult = gameController.SwapTile(x, y, x, y, true);
 
-                        AnimateBoard(swapResult, 0, () => isAnimating = false);
-                    }
+            AnimateBoard(swapResult, 0, () => isAnimating = false);
 
-                    selectedX = -1;
-                    selectedY = -1;
-                };
-            }
+            selectedX = -1;
+            selectedY = -1;
+            ToggleLineCleanerMode(false);
+            UseLineCleaner();
         }
         else
         {
-            selectedX = x;
-            selectedY = y;
+            if (selectedX > -1 && selectedY > -1)
+            {
+                if (Mathf.Abs(selectedX - x) + Mathf.Abs(selectedY - y) > 1)
+                {
+                    selectedX = -1;
+                    selectedY = -1;
+                }
+                else
+                {
+                    isAnimating = true;
+                    boardView.SwapTiles(selectedX, selectedY, x, y).onComplete += () =>
+                    {
+                        bool isValid = gameController.IsValidMovement(selectedX, selectedY, x, y);
+                        if (!isValid)
+                        {
+                            boardView.SwapTiles(x, y, selectedX, selectedY)
+                            .onComplete += () => isAnimating = false;
+                        }
+                        else
+                        {
+                            List<BoardSequence> swapResult = gameController.SwapTile(selectedX, selectedY, x, y);
+
+                            AnimateBoard(swapResult, 0, () => isAnimating = false);
+                        }
+
+                        selectedX = -1;
+                        selectedY = -1;
+                    };
+                }
+            }
+            else
+            {
+                selectedX = x;
+                selectedY = y;
+            }
         }
     }
 
@@ -93,5 +119,32 @@ public class GameHandler : MonoBehaviour
         {
             sequence.onComplete += () => onComplete();
         }
+    }
+
+    public void ToggleLineCleanerMode(bool activate)
+    {
+        InLineCleanerMode = !InLineCleanerMode;
+        Debug.Log("Line Cleaner mode is on: " + InLineCleanerMode);
+
+        if (InLineCleanerMode)
+            lineCleanerButton.image.sprite = lineCleanerButton.spriteState.selectedSprite;
+        else
+            lineCleanerButton.image.sprite = lineCleanerButton.spriteState.highlightedSprite;
+    }
+
+    public void UseLineCleaner()
+    {
+        lineCleanerQuantity--;
+        UpdateLineCleanerText();
+    }
+
+    private void UpdateLineCleanerText()
+    {
+        if (lineCleanerQuantity == 0)
+            lineCleanerButton.interactable = false;
+        else
+            lineCleanerButton.interactable = true;
+
+        lineCleanerText.text = lineCleanerQuantity.ToString();
     }
 }
