@@ -20,7 +20,6 @@ public class PunctuationManager : MonoBehaviour
 
     private int _punctuation = 0;
     private const float Duration = 0.5f;
-    
 
     void Start()
     {

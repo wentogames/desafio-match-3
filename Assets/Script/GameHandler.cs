@@ -37,6 +37,9 @@ public class GameHandler : MonoBehaviour
     [SerializeField] public TMP_Text colorCleanerText;
     [SerializeField] int colorCleanerQuantity;
 
+    [Header("Boosts")]
+    [SerializeField] int comboQuantity;
+
     public bool InLineCleanerMode { get; set; }
     public bool InBlockExplosionMode { get; set; }
     public bool InColorCleanerMode { get; set; }
@@ -90,6 +93,19 @@ public class GameHandler : MonoBehaviour
             UpdateLineCleanerText(BoostMode.BlockExplosion);
             ToggleBoost((int)BoostMode.None);
         }
+        else if (InColorCleanerMode)
+        {
+            isAnimating = true;
+            List<BoardSequence> swapResult = gameController.SwapTile(x, y, x, y, BoostMode.ColorCleaner);
+
+            AnimateBoard(swapResult, 0, () => isAnimating = false);
+
+            selectedX = -1;
+            selectedY = -1;
+            ToggleBoost((int)BoostMode.ColorCleaner);
+            UpdateLineCleanerText(BoostMode.ColorCleaner);
+            ToggleBoost((int)BoostMode.None);
+        }
         else
         {
             if (selectedX > -1 && selectedY > -1)
@@ -138,14 +154,18 @@ public class GameHandler : MonoBehaviour
         if(i == 0)
             PunctuationManager.Instance.ResetClipPitch();
 
-        sequence.Append(boardView.DestroyTiles(boardSequence.matchedPosition)).OnStart(() => PunctuationManager.Instance.ShowPointsAdded((boardSequence.numberOfMatchedTiles * 10) *
-            boardSequence.comboIndex));
+        sequence.Append(boardView.DestroyTiles(boardSequence.matchedPosition)).OnStart(() =>
+            PunctuationManager.Instance.ShowPointsAdded((boardSequence.numberOfMatchedTiles * 10) *
+                boardSequence.comboIndex));
         sequence.Append(boardView.MoveTiles(boardSequence.movedTiles));
         sequence.Append(boardView.CreateTile(boardSequence.addedTiles));
 
         i++;
         if (i < boardSequences.Count)
         {
+            //Every multiple of 5 gives the user a random boost
+            if (boardSequence.comboIndex % comboQuantity == 0)
+                EarnExtraBoost();
             sequence.onComplete += () => AnimateBoard(boardSequences, i, onComplete);
         }
         else
@@ -153,6 +173,28 @@ public class GameHandler : MonoBehaviour
             ToggleBoost((int)BoostMode.None);
             sequence.onComplete += () => onComplete();
         }
+    }
+
+    private void EarnExtraBoost()
+    {
+        int boostIndex = UnityEngine.Random.Range(0, 3);
+
+        switch (boostIndex)
+        {
+            case 0:
+                lineCleanerQuantity++;
+                lineCleanerText.DOColor(Color.cyan, 1f).OnComplete(() => lineCleanerText.DOColor(Color.white, 1f));
+                break;
+            case 1:
+                blockExplosionQuantity++;
+                blockExplosionText.DOColor(Color.cyan, 1f).OnComplete(() => blockExplosionText.DOColor(Color.white, 1f));
+                break;
+            default:
+                colorCleanerQuantity++;
+                colorCleanerText.DOColor(Color.cyan, 1f).OnComplete(() => colorCleanerText.DOColor(Color.white, 1f));
+                break;
+        }
+        UpdateLineCleanerText(BoostMode.None);
     }
 
     public void ToggleBoost(int mode)
@@ -174,6 +216,11 @@ public class GameHandler : MonoBehaviour
                 }
                 break;
             case BoostMode.ColorCleaner:
+                if (colorCleanerQuantity > 0 && !isAnimating)
+                {
+                    InColorCleanerMode = true;
+                    colorCleanerButton.image.sprite = colorCleanerActiveSprite;
+                }
                 break;
             default:
                 InLineCleanerMode = false;
@@ -185,7 +232,6 @@ public class GameHandler : MonoBehaviour
                 colorCleanerButton.image.sprite = colorCleanerInactiveSprite;
                 break;
         }
-        Debug.Log("Switched to mode " + mode);
     }
 
     private void UpdateLineCleanerText(BoostMode mode)

@@ -182,8 +182,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 0
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 13636f76776f058409fcdafad67699a2, type: 2}
+  m_sharedMaterial: {fileID: -7180990664548436678, guid: 13636f76776f058409fcdafad67699a2, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -207,7 +207,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 44.75
+  m_fontSize: 50
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -672,7 +672,7 @@ MonoBehaviour:
   punctuationText: {fileID: 1841829033}
   pointsGroupTransform: {fileID: 1277044274}
   pointsPrefab: {fileID: 2187514662649279274, guid: ed9564a9b8c5cc244a9ecefe281a21e0, type: 3}
-  pointsQuantity: 5
+  pointsQuantity: 10
   audioSource: {fileID: 1277044276}
   pitchRatio: 1.05
   pooledPoints: []
@@ -992,7 +992,10 @@ MonoBehaviour:
   colorCleanerInactiveSprite: {fileID: 21300000, guid: da22499589d2fab47807dbca18022cd0, type: 3}
   colorCleanerActiveSprite: {fileID: 21300000, guid: 751fac46e9f50b14dafbe6dab06a7c1f, type: 3}
   colorCleanerText: {fileID: 192835536}
-  colorCleanerQuantity: 0
+  colorCleanerQuantity: 3
+  comboQuantity: 5
+  defaultColor: {r: 1, g: 1, b: 1, a: 0}
+  boostAddedColor: {r: 0, g: 0.9907739, b: 1, a: 0}
 --- !u!114 &1122489954
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1414,8 +1417,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 0
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 13636f76776f058409fcdafad67699a2, type: 2}
+  m_sharedMaterial: {fileID: -7180990664548436678, guid: 13636f76776f058409fcdafad67699a2, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1439,7 +1442,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 44.75
+  m_fontSize: 50
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1707,7 +1710,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1789960810}
   m_Layer: 0
-  m_Name: MANAGERS
+  m_Name: Managers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1787,8 +1790,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 0
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 13636f76776f058409fcdafad67699a2, type: 2}
+  m_sharedMaterial: {fileID: -7180990664548436678, guid: 13636f76776f058409fcdafad67699a2, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1812,7 +1815,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 44.75
+  m_fontSize: 50
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1

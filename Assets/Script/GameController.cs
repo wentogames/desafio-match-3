@@ -44,6 +44,7 @@ public class GameController
         return false;
     }
 
+    //TODO: break this method into smaller ones
     public List<BoardSequence> SwapTile(int fromX, int fromY, int toX, int toY, BoostMode boostMode = BoostMode.None)
     {
         List<List<Tile>> newBoard = CopyBoard(_boardTiles);
@@ -54,32 +55,33 @@ public class GameController
 
         List<BoardSequence> boardSequences = new List<BoardSequence>();
         List<List<bool>> matchedTiles;
-        int comboIndex = 0;
+        int comboIndex = 1;
         int numberOfMatchedTiles = 0;
 
         if (boostMode == BoostMode.LineCleaner)
         {
+            //Cleaning the matched tiles in the same row
+            List<Vector2Int> matchedPosition = new List<Vector2Int>();
+
             for (int x = 0; x < newBoard.Count; x++)
             {
-                //Cleaning the matched tiles in the same row
-                List<Vector2Int> matchedPosition = new List<Vector2Int>();
-
                 matchedPosition.Add(new Vector2Int(x, fromY));
                 newBoard[fromY][x] = new Tile { id = -1, type = -1 };
             }
         }
 
-        else if(boostMode == BoostMode.BlockExplosion)
+        else if (boostMode == BoostMode.BlockExplosion)
         {
             List<Vector2Int> matchedPosition = new List<Vector2Int>();
+
             for (int x = (fromX - 1); x < ((fromX - 1) + BlockSide); x++)
             {
                 //Cannot clear a tile outside the board
-                if(x >= 0 && x <= 9)
+                if(x >= 0 && x < newBoard.Count)
                 {
                     for(int y = (fromY - 1); y < ((fromY - 1) + BlockSide); y++)
                     {
-                        if(y >= 0 && y <= 9)
+                        if(y >= 0 && y < newBoard.Count)
                         {
                             //Cleaning the tiles in a square 9x9 around the tapped Tile
                             matchedPosition.Add(new Vector2Int(x, y));
@@ -88,6 +90,98 @@ public class GameController
                     }
                 }
             }
+        }
+
+        else if (boostMode == BoostMode.ColorCleaner)
+        {
+            List<Vector2Int> matchedPosition = new List<Vector2Int>();
+            int tappedTileColor = newBoard[fromY][fromX].type;
+
+            for(int y = 0; y < newBoard.Count; y++)
+            {
+                for (int x = 0; x < newBoard[y].Count; x++)
+                {
+                    if (newBoard[y][x].type == tappedTileColor)
+                    {
+                        matchedPosition.Add(new Vector2Int(x, y));
+                        newBoard[y][x] = new Tile { id = -1, type = -1 };
+                    }
+                }
+            }
+
+            // Dropping the tiles
+            Dictionary<int, MovedTileInfo> movedTiles = new Dictionary<int, MovedTileInfo>();
+            List<MovedTileInfo> movedTilesList = new List<MovedTileInfo>();
+
+            for (int i = 0; i < matchedPosition.Count; i++)
+            {
+                int x = matchedPosition[i].x;
+                int y = matchedPosition[i].y;
+                if (y > 0)
+                {
+                    for (int j = y; j > 0; j--)
+                    {
+                        Tile movedTile = newBoard[j - 1][x];
+                        newBoard[j][x] = movedTile;
+                        if (movedTile.type > -1)
+                        {
+                            if (movedTiles.ContainsKey(movedTile.id))
+                            {
+                                movedTiles[movedTile.id].to = new Vector2Int(x, j);
+                            }
+                            else
+                            {
+                                MovedTileInfo movedTileInfo = new MovedTileInfo
+                                {
+                                    from = new Vector2Int(x, j - 1),
+                                    to = new Vector2Int(x, j)
+                                };
+                                movedTiles.Add(movedTile.id, movedTileInfo);
+                                movedTilesList.Add(movedTileInfo);
+                            }
+                        }
+                    }
+
+                    newBoard[0][x] = new Tile
+                    {
+                        id = -1,
+                        type = -1
+                    };
+                }
+            }
+
+            // Filling the board
+            List<AddedTileInfo> addedTiles = new List<AddedTileInfo>();
+            for (int y = newBoard.Count - 1; y > -1; y--)
+            {
+                for (int x = newBoard[y].Count - 1; x > -1; x--)
+                {
+                    if (newBoard[y][x].type == -1)
+                    {
+                        int tileType = Random.Range(0, _tilesTypes.Count);
+                        Tile tile = newBoard[y][x];
+                        tile.id = _tileCount++;
+                        tile.type = _tilesTypes[tileType];
+                        addedTiles.Add(new AddedTileInfo
+                        {
+                            position = new Vector2Int(x, y),
+                            type = tile.type
+                        });
+                    }
+                }
+            }
+
+            BoardSequence sequence = new BoardSequence
+            {
+                matchedPosition = matchedPosition,
+                movedTiles = movedTilesList,
+                addedTiles = addedTiles,
+                numberOfMatchedTiles = numberOfMatchedTiles,
+                comboIndex = comboIndex
+            };
+            boardSequences.Add(sequence);
+            numberOfMatchedTiles = 0;
+
         }
 
         while (HasMatch(matchedTiles = FindMatches(newBoard)))
@@ -181,7 +275,6 @@ public class GameController
             boardSequences.Add(sequence);
             numberOfMatchedTiles = 0;
         }
-
         _boardTiles = newBoard;
 
         return boardSequences;
